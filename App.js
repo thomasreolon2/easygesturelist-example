@@ -196,10 +196,7 @@ export default class App extends React.Component {
                     }
                   }}
                 >
-                  {
-                    (voiddelete === true && top + 100,
-                    console.log(styles.gesture.left))
-                  }
+                  
                   <Image
                     source={{
                       uri: item.image,
