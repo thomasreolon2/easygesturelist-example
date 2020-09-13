@@ -19,9 +19,6 @@ export default class App extends React.Component {
     name: null,
     options: null,
     deleteItem: false,
-
-    //manipulate deleted free items
-    i: null,
   };
 
   componentDidMount() {
@@ -29,12 +26,12 @@ export default class App extends React.Component {
   }
 
   getPermissionAsync = async () => {
-    // if (Platform.OS !== "web") {
-    //   const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-    //   if (status !== "granted") {
-    //     alert("Sorry, we need camera roll permissions to make this work!");
-    //   }
-    // }
+     if (Platform.OS !== "web") {
+       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+       if (status !== "granted") {
+         alert("Sorry, we need camera roll permissions to make this work!");
+       }
+     }
   };
 
   _pickImage = async () => {
@@ -48,7 +45,6 @@ export default class App extends React.Component {
       if (!result.cancelled) {
         this.setState({ imagePicker: result.uri });
 
-        //change by @sanjiv
         let arr = this.state.imagePicker.split('/');
         this.setState({ name: arr[arr.length - 1] });
         console.log("name ", this.state.name)
@@ -62,12 +58,9 @@ export default class App extends React.Component {
   };
 
   Add_item() {
-    //change by @sanjiv
-    const { itemsdraggable, imagePicker, name } = this.state;//imafe
-    //console.log("item ", itemsdraggable, imagePicker, name)
-    // const last_item = itemsdraggable[itemsdraggable.length - 1];
-    // const id = itemsdraggable.length <= 0 ? 1 : itemsdraggable.length + 1;//last_item.id + 1;
 
+    const { itemsdraggable, imagePicker, name } = this.state;
+    
     let arr = this.state.imagePicker.split('/');
     const id = arr[arr.length - 1].split('.')[0];
     let existFlag = 0;
@@ -125,8 +118,6 @@ export default class App extends React.Component {
 
   deleteItem(id) {
     const list = this.state.itemsdraggable.filter((item) => item.key !== id);
-    console.log("---------------------------------------------------------")
-    console.log(list);
     this.setState({ itemsdraggable: list });
   }
 
@@ -191,7 +182,7 @@ export default class App extends React.Component {
           {this.state.itemsdraggable.map((item, index) => {
             const id = item.key;
             return (
-              //<View style={styles.dragArea}>
+         
               <Gestures
                 darggable={true}
                 scalable={{
@@ -257,7 +248,7 @@ export default class App extends React.Component {
                   </View>
                 )}
               </Gestures>
-              //</View>
+    
             );
           })}
         </View>
