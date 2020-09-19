@@ -1,5 +1,4 @@
 ## Hey Visit My Tutorial! :stuck_out_tongue_winking_eye:
-[Thom Here] It's a very simple project just to explore the lib.
 
 :relaxed: 
 this repository is intended for my tutorial on:
