@@ -7,6 +7,7 @@ import {
   Image,
   TextInput,
   Alert,
+
 } from "react-native";
 import Gestures from "react-native-easy-gestures";
 import * as ImagePicker from "expo-image-picker";
@@ -18,9 +19,6 @@ export default class App extends React.Component {
     name: null,
     options: null,
     deleteItem: false,
-
-    //manipulate deleted free items
-    i: null,
   };
 
   componentDidMount() {
@@ -28,12 +26,12 @@ export default class App extends React.Component {
   }
 
   getPermissionAsync = async () => {
-    if (Platform.OS !== "web") {
-      const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
-      if (status !== "granted") {
-        alert("Sorry, we need camera roll permissions to make this work!");
-      }
-    }
+     if (Platform.OS !== "web") {
+       const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+       if (status !== "granted") {
+         alert("Sorry, we need camera roll permissions to make this work!");
+       }
+     }
   };
 
   _pickImage = async () => {
@@ -46,23 +44,42 @@ export default class App extends React.Component {
       });
       if (!result.cancelled) {
         this.setState({ imagePicker: result.uri });
+
+        let arr = this.state.imagePicker.split('/');
+        this.setState({ name: arr[arr.length - 1] });
+        console.log("name ", this.state.name)
+
       }
 
-      console.log(result);
+      //console.log(result);
     } catch (E) {
       console.log(E);
     }
   };
 
   Add_item() {
-    const { itemsdraggable, image, name } = this.state;
-    const last_item = this.state.itemsdraggable.slice(-1).pop();
-    const id = itemsdraggable.length <= 0 ? 1 : last_item.id + 1;
+
+    const { itemsdraggable, imagePicker, name } = this.state;
+    
+    let arr = this.state.imagePicker.split('/');
+    const id = arr[arr.length - 1].split('.')[0];
+    let existFlag = 0;
+    itemsdraggable.map((item) => {
+      if (item.key == id) {
+        existFlag = 1;
+        return null;
+      }
+
+    })
+    if (existFlag == 1) {
+      Alert.alert("Item Exist");
+      return
+    };
 
     itemsdraggable.push({
-      name: this.state.name,
-      image: this.state.imagePicker,
-      id: id,
+      name: name,
+      image: imagePicker,
+      key: id,
     });
 
     console.log(itemsdraggable);
@@ -99,15 +116,14 @@ export default class App extends React.Component {
     );
   }
 
-  deleteItem(index, item, id) {
-    const list = this.state.itemsdraggable.filter((item) => item.id !== id);
-
+  deleteItem(id) {
+    const list = this.state.itemsdraggable.filter((item) => item.key !== id);
     this.setState({ itemsdraggable: list });
   }
 
   render() {
     return (
-      <View style={styles.container}>
+      <View style={styles.container} key>
         <View style={{ alignSelf: "center" }}>
           <Image
             source={{
@@ -164,80 +180,75 @@ export default class App extends React.Component {
         )}
         <View style={styles.dragArea}>
           {this.state.itemsdraggable.map((item, index) => {
-            const id = item.id;
-
+            const id = item.key;
             return (
-              <View>
-                <Gestures
-                  style={styles.gesture}
-                  scalable={{
-                    min: 1,
-                    max: 2,
-                  }}
-                  rotatable={true}
-                  ref={(c) => {
-                    this.gestures = c;
-                  }}
-                  onStart={(event, styles) => {
-                    this.setState({ itemDelete: true });
-                    console.log("test");
-                  }}
-                  onEnd={(event, styles) => {
-                    this.setState({ options: index });
-                    this.setState({ itemDelete: false });
+         
+              <Gestures
+                darggable={true}
+                scalable={{
+                  min: 0.1,
+                  max: 7,
+                }}
+                rotatable={true}
+                key={id}
+                style={styles.gesture}
+                onStart={(event, styles) => {
+                  this.setState({ itemDelete: true });
+                }}
 
-                    if (this.state.itemDelete == true) {
-                      if (styles.top > 100) {
-                        this.deleteItem(index, item, id);
-                      }
-                      if (styles.top < -150) {
-                        this.deleteItem(index, item, id);
-                      }
+                //some change here
+                onEnd={(event, styles) => {
+                  this.setState({ options: id });
+                  this.setState({ itemDelete: false });
+
+                  if (this.state.itemDelete == true) {
+                    if (styles.top > 100) {
+                      this.deleteItem(id);
                     }
-                  }}
-                >
-                  {
-                    (voiddelete === true && top + 100,
-                    console.log(styles.gesture.left))
+                    if (styles.top < -150) {
+                      this.deleteItem(id);
+                    }
                   }
-                  <Image
-                    source={{
-                      uri: item.image,
-                    }}
-                    style={styles.gesture_image}
-                  />
-
-                  {this.state.options === index && (
-                    <View style={styles.options_view}>
-                      <View style={{ marginRight: 2 }}>
-                        <TouchableOpacity
-                          onPress={() => {
-                            this.security(item);
-                          }}
-                        >
-                          <Image
-                            style={styles.imageItemOpt}
-                            source={require("./icons/security_icon.png")}
-                          />
-                        </TouchableOpacity>
-                      </View>
-
-                      <View style={{ marginLeft: 2 }}>
-                        <TouchableOpacity
-                          onPress={() => {
-                            this.balance(item);
-                          }}
-                        >
-                          <Image
-                            style={styles.imageItemOpt}
-                            source={require("./icons/balance_icon.png")}
-                          />
-                        </TouchableOpacity>
-                      </View>
+                }}
+              >
+                <Image
+                  source={{
+                    uri: item.image,
+                  }}
+                  style={styles.gesture_image}
+                //key={item.key}
+                />
+                {this.state.options === id && (
+                  <View style={styles.options_view}>
+                    <View style={{ marginRight: 2 }}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          this.security(item);
+                        }}
+                      >
+                        <Image
+                          style={styles.imageItemOpt}
+                          source={require("./icons/security_icon.png")}
+                        />
+                      </TouchableOpacity>
                     </View>
-                  )}
-                </Gestures>
-              </View>
+
+                    <View style={{ marginLeft: 2 }}>
+                      <TouchableOpacity
+                        onPress={() => {
+                          this.balance(item);
+                        }}
+                      >
+                        <Image
+                          style={styles.imageItemOpt}
+                          source={require("./icons/balance_icon.png")}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                )}
+              </Gestures>
+    
             );
           })}
         </View>
